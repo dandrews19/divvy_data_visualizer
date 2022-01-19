@@ -2,7 +2,7 @@ pandas
 numpy
 datetime
 pydeck
-collections
+Counter
 googlemaps
 random
 plotly.express
