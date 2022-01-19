@@ -3,6 +3,6 @@ numpy
 datetime
 pydeck
 collections
-googlemaps
+-U googlemaps
 random
 plotly.express
