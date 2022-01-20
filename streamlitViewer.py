@@ -244,8 +244,8 @@ st.write("Average Temperature: ", np.mean(df_new['tmpf']), " degrees F")
 
 starting_station = Counter(df_new['start_station_name']).most_common(1)
 ending_station = Counter(df_new['end_station_name']).most_common(1)
-st.write("Most Popular Starting Station: ", starting_station[0][0], ", ", starting_station[0][1], "rides started here")
-st.write("Most Popular Ending Station: ", ending_station[0][0], ", ", ending_station[0][1], "rides ended here")
+st.write("Most Popular Starting Station: ", starting_station[0][0], ", ", starting_station[0][1], "rides in sample started here")
+st.write("Most Popular Ending Station: ", ending_station[0][0], ", ", ending_station[0][1], "rides in sample ended here")
 
 
 # displaying correlation
