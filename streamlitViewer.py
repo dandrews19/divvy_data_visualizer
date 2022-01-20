@@ -8,8 +8,11 @@ import googlemaps
 import random
 import plotly.express as px
 
+# link to the data stored in google cloud
 link= "https://storage.googleapis.com/all_divvy_data_with_weather/all_data_shortened_updated.csv"
 
+# function for loading data. This function returns a random subset of data from the link with the n rows, where n is the
+# argument passed to the function
 @st.cache(persist=True, allow_output_mutation=True)
 def load_data(nrows):
     num_lines = 3000000
@@ -25,10 +28,10 @@ num_rows = st.sidebar.number_input('How many datapoints would you like?', value=
 df = load_data(num_rows).reset_index()
 
 
-
+# converting to datetime
 df['started_at'] = pd.to_datetime(df['started_at'])
 df['ended_at'] = pd.to_datetime(df['ended_at'])
-
+# title
 st.title('Divvy Data Visualizer')
 st.write(
     """
@@ -37,11 +40,11 @@ st.write(
     """)
 
 
-
+# creating columns for visualizing starting and ending locations
 col1, col2 = st.columns(2)
 
 
-
+# setting up filters
 from_date = st.sidebar.date_input("From Day", value=df['started_at'][0], min_value=df['started_at'][0],
                                   max_value=df['ended_at'][len(df) - 1])
 
@@ -65,14 +68,15 @@ wind_direction = st.sidebar.multiselect(label= 'Wind Directions', options=['All'
 from_duration = st.sidebar.number_input('Minimum Trip Duration (Minutes)', min_value=0, value=0)
 
 to_duration = st.sidebar.number_input('Maximum Trip Duration (Minutes)', min_value=from_duration, value=99999999)
+# changing the index to the ended_at column in order to sort by time
 df['ended_at_index'] = df['ended_at']
 df.set_index('ended_at_index',inplace=True)
 df_new = df.between_time(start_time=from_time, end_time=to_time)
-
+# condition if wind direction is specified
 if 'All' in wind_direction:
     wind_direction = ['N', 'NW', 'NE', 'E', 'W', 'S', 'SE', 'SW']
 
-
+# filtering based on user inputs from above
 df_new = df_new[(df_new['started_at'].dt.date >= from_date) & (df_new['ended_at'].dt.date <= to_date) &
                 (df_new['tmpf'] >= from_temperature) & (df_new['tmpf'] <= to_temperature) &
                 (df_new['wind_speed_mph'] >= from_windspeed) & (df_new['wind_speed_mph'] <= to_windspeed) &
@@ -81,9 +85,10 @@ df_new = df_new[(df_new['started_at'].dt.date >= from_date) & (df_new['ended_at'
 
 
 
-
+# dropping null values to avoid errors in displaying data
 df_new = df_new.dropna()
 
+# creating a bootstrapped sample of data to display using Pydeck to increase efficiency
 if len(df_new) > 10000:
     sampled_df = df_new.sample(10000, replace=True)
 else:
@@ -96,7 +101,7 @@ else:
 st.title("Most Popular Routes")
 
 
-
+# displaying the most popular starting and ending locations and their frequency of use with Pydeck
 col1.write(
     """ 
     **Most Popular Starting Stations**
@@ -157,8 +162,11 @@ col2.write(pdk.Deck(
 # google maps portion
 
 API_KEY = 'AIzaSyAXSrhT8lBW6mJbBoW6LRXVyPu1RUwOA1g'
+# connecting to google maps api
 gmaps = googlemaps.Client(key = API_KEY)
 
+# a function that takes in a description of the path taken, and whether or not we want the start or the end coordinates
+# and returns the latitude and longitude of the specified start or end as a tuple
 def get_coordinates(start_to_end, location):
     index = list(df_new['start_to_end']).index(start_to_end)
     latitude = df_new[location + '_latitude'][index]
@@ -166,36 +174,49 @@ def get_coordinates(start_to_end, location):
 
     return (latitude, longitude)
 
+# using the counter moudule to find the most popular paths taken
 start_to_end_counter = Counter(df_new['start_to_end']).most_common(22)
 
 
 name_list = []
 path_list = []
+# looping thru the 22 most popular routes
 for i in start_to_end_counter:
+    # calling the get coordinates function to get the longitude and latitude of the start and end stations
     start_coordinates = get_coordinates(i[0], 'start')
     end_coordinates = get_coordinates(i[0], 'end')
+    # calling the google maps api to get directions from the start to the end station, using "bicycling" as a mode
+    # of transportation
     directions = gmaps.directions(origin=start_coordinates, destination=end_coordinates, mode="bicycling")
 
+    # creating a dictionary to describe each step of the path
     start_dict = {'lat': start_coordinates[0], 'lng': start_coordinates[1]}
-
+    # creating a list that stores each step
     list_of_directions = [start_dict]
+    # going thru each step and appending the end location based on data received from google maps api
     for c in directions[0]['legs'][0]['steps']:
         list_of_directions.append(c['end_location'])
 
     path = []
-
+    # making another list to store path so it is readable by Pydeck
     for h in list_of_directions:
         path.append([h['lng'], h['lat']])
 
     name_list.append(i[0])
     path_list.append(path)
 
-colors = [(230, 25, 75), (60, 180, 75), (255, 225, 25), (67, 99, 216), (245, 130, 49), (145, 30, 180), (70, 240, 240), (240, 50, 230), (188, 246, 12), (250, 190, 190), (0, 128, 128), (230, 190, 255), (154, 99, 36), (255, 250, 200), (128, 0, 0), (170, 255, 195), (128, 128, 0), (255, 216, 177), (0, 0, 117), (128, 128, 128), (255, 255, 255), (0, 0, 0)]
+# a set of distinct colors to properly display paths with no overlapping colors
+colors = [(230, 25, 75), (60, 180, 75), (255, 225, 25), (67, 99, 216), (245, 130, 49), (145, 30, 180), (70, 240, 240),
+          (240, 50, 230), (188, 246, 12), (250, 190, 190), (0, 128, 128), (230, 190, 255), (154, 99, 36),
+          (255, 250, 200), (128, 0, 0), (170, 255, 195), (128, 128, 0), (255, 216, 177), (0, 0, 117), (128, 128, 128),
+          (255, 255, 255), (0, 0, 0)]
+# if there's less than 22 paths filtered, this line ensures it will still display a map
+colors = colors[:len(name_list)]
 
-
+# creating a dataframe containing path information tol be read by Pydeck
 paths_df = pd.DataFrame({"path": path_list, "names": name_list, 'color': colors})
 
-
+# using Pydeck to visualize the 22 most popular paths
 view_state = pdk.ViewState(latitude=41.878166, longitude=-87.631929, zoom=11)
 
 layer = pdk.Layer(
@@ -212,7 +233,7 @@ layer = pdk.Layer(
 st.write(pdk.Deck(map_style="mapbox://styles/mapbox/dark-v9", layers=[layer], initial_view_state=view_state, tooltip={"text": "{names}"}))
 
 
-
+# displaying summary statistics
 st.title("Summary Statistics")
 
 st.write("Rides in sample matching criteria: ", len(df_new))
@@ -227,7 +248,7 @@ st.write("Most Popular Starting Station: ", starting_station[0][0], ", ", starti
 st.write("Most Popular Ending Station: ", ending_station[0][0], ", ", ending_station[0][1], "rides ended here")
 
 
-
+# displaying correlation
 st.title("What Variables are Correlated With Ride Duration?")
 st.write("(with given filters)")
 options = ["Temperature (F)", "Wind Speed (MPH)", "Visibility", "Humidity", "Hour and Minute"]
