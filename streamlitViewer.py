@@ -107,7 +107,7 @@ st.title("Most Popular Routes")
 
 
 # displaying the most popular starting and ending locations and their frequency of use with Pydeck
-col2.title("Most Popular Starting Stations")
+col1.title("Most Popular Starting Stations")
 col1.write(
     """ 
     Click and drag map to load properly
