@@ -35,8 +35,12 @@ df['ended_at'] = pd.to_datetime(df['ended_at'])
 st.title('Divvy Data Visualizer')
 st.write(
     """
+    Author: Dylan Andrews
+    Github: https://github.com/dandrews19
+    LinkedIn: https://www.linkedin.com/in/dylan-m-andrews/
+    Email: dmandrew@usc.edu
     A tool that allows the user to easily visualize publicly accessible Divvy data alongside factors including weather
-    and time of year
+    and time of year. (Try refreshing if error is thrown initially)
     """)
 
 
