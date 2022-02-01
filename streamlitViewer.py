@@ -108,7 +108,8 @@ st.title("Most Popular Routes")
 # displaying the most popular starting and ending locations and their frequency of use with Pydeck
 col1.write(
     """ 
-    **Most Popular Starting Stations**
+    **Most Popular Starting Stations**\n
+    Click and drag map to load properly
     """)
 col1.write(pdk.Deck(
         map_style="mapbox://styles/mapbox/dark-v9",
@@ -136,7 +137,8 @@ col1.write(pdk.Deck(
 
 col2.write(
     """ 
-    **Most Popular Ending Stations**
+    **Most Popular Ending Stations**\n
+    Click and drag map to load properly
     """)
 col2.write(pdk.Deck(
         map_style="mapbox://styles/mapbox/dark-v9",
