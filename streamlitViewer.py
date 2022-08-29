@@ -24,7 +24,7 @@ def load_data(nrows):
 
 st.sidebar.title("Filters")
 st.sidebar.write("(Try refreshing if error is thrown initially)")
-num_rows = st.sidebar.number_input('How many datapoints would you like?', value=100000)
+num_rows = st.sidebar.number_input('How many datapoints would you like?', value=10000)
 
 df = load_data(num_rows).reset_index()
 
